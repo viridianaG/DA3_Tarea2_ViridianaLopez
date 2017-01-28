@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>AJAXT TEST 1</title>
+	<script type="" src="node_modules\jquery\dist\jquery.min.js"></script>
+	<script type="text/javascript" src="node_modules\bootstrap\dist\js\bootstrap.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="node_modules\bootstrap\dist\css\bootstrap.min.css">
+</head>
+<body>
+	<div class="container">
+		<div class="panel panel-primary">
+			<div class="panel-heading">Nuevo Producto</div>
+			<div class="panel-body">
+				<form id="frmProducto" action="">
+					<div class="form-group col-md-6">
+						<label for='nombre' class="control-label">Producto:</label>
+						<input name="nombre" type="text" class="form-control">
+					</div>
+					<div class="form-group col-md-6">
+						<label for='precio' class="control-label">Precio: </label>
+						<input name="precio" type="text" class="form-control">
+					</div>
+					<button id="btnAgregar" class="btn btn-primary">Agregar</button>
+				</form>
+			</div>
+		</div>
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				Productos
+			</div>
+			<div id="main" class="panel-body">
+				<table id="tblProductos" class="table table-stripped">
+					<tr id="trHeaders">
+						<th>ID</th>
+						<th>Nombre</th>
+						<th>Costo</th>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+	tomarDatosDeServidor();
+	function tomarDatosDeServidor(){
+		//Elimina todos los datos de la tabla
+		$("#tblProductos > ").children().not('tr#trHeaders').remove();
+
+		//Obtiene la informacion todos los productos del servidor
+		$.ajax({
+			url: 'http://localhost:54332/APIProductos/getJsonList',
+			type: 'GET',
+			dataType:'JSON',
+			success: function(result,status,xhr){
+				var productos = result;
+				//Se rellena la tabla con los productos
+				for (var i = 0; i < productos.length; i++) {
+					agregarRenglon(productos[i]);
+				}
+			},
+			error: function(xhr,status,error){
+				alert('Servidor no disponible o URL incorrecta');
+			}
+		});
+	}
+
+	function agregarRenglon(renglon){
+		var nuevoRenglon = $("<tr>")
+		.append($('<td>').html(renglon.productoID))
+		.append($('<td>').html(renglon.nombre))
+		.append($('<td>').html(renglon.precio));
+		$("#tblProductos").append(nuevoRenglon);
+	}
+
+	$('#frmProducto').submit(function (e) {
+        e.preventDefault();
+    	//e.stopImmediatePropagation();
+    	var formSerialized = $(this).serialize();
+
+		$.ajax({
+			url:'http://localhost:54332/APIProductos/createProducto',
+			type:'POST',
+			dataType:'JSON', //El formato de lo que recibes
+			data: formSerialized,
+			success: function(result,status,xhr){
+				tomarDatosDeServidor();
+			},
+			error: function(xhr,status,error){
+				alert('No se conecto :(');
+			},
+		});
+	});
+</script>
+</html>
